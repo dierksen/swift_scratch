@@ -24,26 +24,23 @@ def _impl(ctx):
         swift_toolchain = swift_toolchain,
     )
 
-    if ctx.attr.module_map_file:
-        module_map = paths.join(apple_common.apple_toolchain().developer_dir(), ctx.attr.module_map_file)
-        precompiled_module = swift_common.precompile_clang_module(
-            actions = ctx.actions,
-            cc_compilation_context = compilation_context,
-            module_map_file = module_map,
-            module_name = ctx.attr.name,
-            target_name = ctx.attr.name,
-            swift_toolchain = swift_toolchain,
-            feature_configuration = feature_configuration,
-            swift_infos = swift_infos,
-        )
-        module = swift_common.create_clang_module(
-            compilation_context = compilation_context,
-            module_map = module_map,
-            precompiled_module = precompiled_module,
-        )
-        modules = [swift_common.create_module(clang = module, name = ctx.attr.name)]
-    else:
-        modules = []
+    module_map = paths.join(apple_common.apple_toolchain().developer_dir(), ctx.attr.module_map_file)
+    precompiled_module = swift_common.precompile_clang_module(
+        actions = ctx.actions,
+        cc_compilation_context = compilation_context,
+        module_map_file = module_map,
+        module_name = ctx.attr.name,
+        target_name = ctx.attr.name,
+        swift_toolchain = swift_toolchain,
+        feature_configuration = feature_configuration,
+        swift_infos = swift_infos,
+    )
+    module = swift_common.create_clang_module(
+        compilation_context = compilation_context,
+        module_map = module_map,
+        precompiled_module = precompiled_module,
+    )
+    modules = [swift_common.create_module(clang = module, name = ctx.attr.name)]
 
     return [
         swift_common.create_swift_info(

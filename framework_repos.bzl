@@ -60,6 +60,7 @@ def _impl(repository_ctx):
                 repository_ctx.file(output_sdk_path.get_child("deps.json"), content = deps_result.stdout)
                 build_file_lines = [
                     "load(\"@//:apple_framework_pcm.bzl\", \"apple_framework_pcm\")",
+                    "load(\"@build_bazel_rules_swift//swift:swift.bzl\", \"swift_module_alias\")",
                     "",
                     "package(default_visibility = [\"//visibility:public\"])",
                     "",
@@ -75,7 +76,7 @@ def _impl(repository_ctx):
                         module_map_file = clang["moduleMapPath"].replace("{}/".format(developer_dir_path), "")
                         build_file_lines.append("    module_map_file = \"{}\",".format(module_map_file))
                     else:
-                        build_file_lines.append("apple_framework_pcm(")
+                        build_file_lines.append("swift_module_alias(")
                         build_file_lines.append("    name = \"{}\",".format(module_name.replace(".swiftmodule", "_swift")))
                     deps = pkg.get("directDependencies", [])
                     clang_deps = [d["clang"] for d in deps if "clang" in d]
