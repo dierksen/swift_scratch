@@ -4,7 +4,7 @@ load("@build_bazel_rules_swift//swift/internal:providers.bzl", "SwiftInfo", "Swi
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
-def _clang_implicit_deps_impl(ctx):
+def _impl(ctx):
     swift_toolchain = ctx.attr._toolchain[SwiftToolchainInfo]
 
     deps = ctx.attr.deps
@@ -56,7 +56,7 @@ def _clang_implicit_deps_impl(ctx):
     ]
 
 apple_framework_pcm = rule(
-    implementation = _clang_implicit_deps_impl,
+    implementation = _impl,
     attrs = dicts.add(
         swift_library_rule_attrs(requires_srcs = False),
         {

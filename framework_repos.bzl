@@ -59,8 +59,7 @@ def _impl(repository_ctx):
                 scan_deps = json.decode(deps_result.stdout)
                 repository_ctx.file(output_sdk_path.get_child("deps.json"), content = deps_result.stdout)
                 build_file_lines = [
-                    "load(\"@//:stuff.bzl\", \"apple_framework_pcm\")",
-                    # "load(\"@build_bazel_rules_swift//swift:swift.bzl\", \"swift_module_alias\")",
+                    "load(\"@//:apple_framework_pcm.bzl\", \"apple_framework_pcm\")",
                     "",
                     "package(default_visibility = [\"//visibility:public\"])",
                     "",
