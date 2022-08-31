@@ -4,5 +4,5 @@ swift_binary(
     name = "stuff",
     srcs = ["stuff.swift"],
     data = ["@here_be_xcodes//:toolchains"],
-    deps = ["@here_be_xcodes//version13_3_1_13E500a/MacOSX/MacOSX:SwiftUI_swift"],
+    deps = ["@here_be_xcodes//version13_4_1_13F100/MacOSX/MacOSX:SwiftUI_swift"],
 )

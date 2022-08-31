@@ -9,14 +9,14 @@ def _impl(repository_ctx):
     repository_ctx.file("toolchains", content = json.encode(xcode_toolchains))
     repository_ctx.file("BUILD", "exports_files([\"toolchains\"])")
 
-    for toolchain in xcode_toolchains[0:1]:
+    for toolchain in xcode_toolchains:
         version_name = "version{}".format(toolchain.version.replace(".", "_"))
         developer_dir_path = repository_ctx.path(toolchain.developer_dir)
         platform_dir = developer_dir_path.get_child("Platforms")
         platforms = platform_dir.readdir()
         sdk_aliases = {}
         sdk_realpaths = {}
-        for platform in platforms[4:5]:
+        for platform in platforms:
             sdk_dir = platform.get_child("Developer").get_child("SDKs")
             sdks = sdk_dir.readdir()
             for sdk in sdks:
@@ -25,6 +25,7 @@ def _impl(repository_ctx):
                 if sdk_realpath in sdk_realpaths:
                     # Skip symlinked sdks
                     continue
+                sdk_realpaths[sdk_realpath] = 1
                 output_sdk_path = repository_ctx.path(version_name).get_child(platform.basename.replace(".platform", "")).get_child(sdk_realpath.basename.replace(".sdk", ""))
 
                 frameworks_dir = sdk_realpath.get_child("System").get_child("Library").get_child("Frameworks")
@@ -59,8 +60,7 @@ def _impl(repository_ctx):
                 scan_deps = json.decode(deps_result.stdout)
                 repository_ctx.file(output_sdk_path.get_child("deps.json"), content = deps_result.stdout)
                 build_file_lines = [
-                    "load(\"@//:apple_framework_pcm.bzl\", \"apple_framework_pcm\")",
-                    "load(\"@build_bazel_rules_swift//swift:swift.bzl\", \"swift_module_alias\")",
+                    "load(\"@build_bazel_rules_swift//swift:swift.bzl\", \"swift_module_alias\", \"swift_c_module\")",
                     "",
                     "package(default_visibility = [\"//visibility:public\"])",
                     "",
@@ -71,10 +71,13 @@ def _impl(repository_ctx):
                         continue
                     clang = pkg.get("details", {}).get("clang", {})
                     if clang:
-                        build_file_lines.append("apple_framework_pcm(")
+                        build_file_lines.append("swift_c_module(")
                         build_file_lines.append("    name = \"{}\",".format(module_name.replace(".pcm", "")))
-                        module_map_file = clang["moduleMapPath"].replace("{}/".format(developer_dir_path), "")
-                        build_file_lines.append("    module_map_file = \"{}\",".format(module_map_file))
+                        build_file_lines.append("    module_name = \"{}\",".format(module_name.replace(".pcm", "")))
+                        module_map_file = clang["moduleMapPath"].replace("{}".format(sdk_realpath), "__BAZEL_XCODE_SDKROOT__").replace("{}".format(developer_dir_path), "__BAZEL_XCODE_DEVELOPER_DIR__")
+
+                        # module_map_file = clang["moduleMapPath"].replace("{}".format(sdk_realpath), "sdk").replace("{}".format(resource_dir), "resource")
+                        build_file_lines.append("    system_module_map = \"{}\",".format(module_map_file))
                     else:
                         build_file_lines.append("swift_module_alias(")
                         build_file_lines.append("    name = \"{}\",".format(module_name.replace(".swiftmodule", "_swift")))
